@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     results = []
 
-    print "Starting %d simulations with %d players..." % (num_simulations, num_players)
+    print("Starting %d simulations with %d players..." % (num_simulations, num_players))
     def run_game(i):
         #print(i, end=' ', file=sys.stderr, flush = True)
         game = Game(
@@ -71,21 +71,21 @@ if __name__ == "__main__":
         return game.statistics
     pool = multiprocessing.Pool(4)
     #pool.map = map # uncomment for debugging purposes
-    results = pool.map(run_game, range(num_simulations))
-    print
+    results = pool.map(run_game, list(range(num_simulations)))
+    print()
 
     scores = [statistics.score for statistics in results]
 
-    print "Results"
-    print sorted(scores)
-    print "Number of players:", num_players
-    print "Average result:", float(sum(scores)) / len(scores)
-    print "Best result:", max(scores)
-    print "Worst result:", min(scores)
-    print "Rate of perfect scores: %.2f %%" % (float(scores.count(30 if deck_type == DECK55 else 25)) / len(scores) * 100.0)
+    print("Results")
+    print(sorted(scores))
+    print("Number of players:", num_players)
+    print("Average result:", float(sum(scores)) / len(scores))
+    print("Best result:", max(scores))
+    print("Worst result:", min(scores))
+    print("Rate of perfect scores: %.2f %%" % (float(scores.count(30 if deck_type == DECK55 else 25)) / len(scores) * 100.0))
 
     lives = [statistics.lives for statistics in results]
-    print "Average number of remaining lives:", float(sum(lives)) / len(lives)
+    print("Average number of remaining lives:", float(sum(lives)) / len(lives))
 
     num_turns = [statistics.num_turns for statistics in results]
-    print "Average number of turns:", float(sum(num_turns)) / len(num_turns)
+    print("Average number of turns:", float(sum(num_turns)) / len(num_turns))

@@ -151,17 +151,17 @@ if __name__ == '__main__':
     if not args.clear and os.path.isfile("model.tar"):
         # load model from file
         model = torch.load("model.tar")
-        print >> sys.stderr, "Loaded model from file"
+        print("Loaded model from file", file=sys.stderr)
     else:
         model = PolicyNetwork()
-        print >> sys.stderr, "Created new model"
+        print("Created new model", file=sys.stderr)
     
     optimizer = optim.Adam(model.parameters(), lr=args.lrate)
     memory = ReplayMemory(args.memory)
     
-    print "Using learning rate = %r" % args.lrate
-    print "Using replay memory = %d" % args.memory
-    print
+    print("Using learning rate = %r" % args.lrate)
+    print("Using replay memory = %d" % args.memory)
+    print()
     
     running_avg = 0.0
     running_reward = 0.0
@@ -231,19 +231,19 @@ if __name__ == '__main__':
             iteration += 1
             
             if iteration % 10 == 0:
-                print
-                print "Iteration %d" % iteration
-                print "Epsilon threshold:", eps_threshold
-                print Counter(chosen_actions)
-                print game.statistics
+                print()
+                print("Iteration %d" % iteration)
+                print("Epsilon threshold:", eps_threshold)
+                print(Counter(chosen_actions))
+                print(game.statistics)
                 running_avg = 0.99 * running_avg + 0.01 * game.statistics.score
                 running_reward = 0.99 * running_reward + 0.01 * game_reward
-                print "Running average score: %.2f" % running_avg
+                print("Running average score: %.2f" % running_avg)
                 # print "Running average reward: %.2f" % running_reward
-                print "Game reward: %.2f" % game_reward
+                print("Game reward: %.2f" % game_reward)
                 
                 if len(memory) < memory.capacity:
-                    print "Memory size:", len(memory)
+                    print("Memory size:", len(memory))
             
             if iteration % 100 == 0:
                 torch.save(model, "model.tar")
@@ -251,6 +251,6 @@ if __name__ == '__main__':
             # finish_episode(model, optimizer)
 
     except KeyboardInterrupt:
-        print "Interrupted after %d iterations" % iteration
+        print("Interrupted after %d iterations" % iteration)
         torch.save(model, "model.tar")
 

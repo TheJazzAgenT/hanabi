@@ -14,6 +14,5 @@ d = deck()
 random.shuffle(d)
 
 for card in d:
-    print card.number, card.color
-    print
-
+    print(card.number, card.color)
+    print()

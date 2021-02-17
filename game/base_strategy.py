@@ -58,6 +58,6 @@ class BaseStrategy(object):
 
     def log(self, message):
         if self.verbose:
-            print "Player %d: %s" % (self.id, message)
+            print("Player %d: %s" % (self.id, message))
 
 

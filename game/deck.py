@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .card import Card
+from game.card import Card
 
 
 def standard_deck(include_rainbow=True):
@@ -10,8 +10,8 @@ def standard_deck(include_rainbow=True):
     for color in Card.COLORS:
         if not include_rainbow and color == Card.RAINBOW:
             continue
-        
-        for number in xrange(1, Card.NUM_NUMBERS + 1):
+
+        for number in range(1, Card.NUM_NUMBERS + 1):
             if color == Card.RAINBOW:
                 quantity = 1
             elif number == 1:
@@ -22,16 +22,16 @@ def standard_deck(include_rainbow=True):
                 quantity = 1
             else:
                 raise Exception("Unknown card parameters.")
-            
-            for i in xrange(quantity):
+
+            for i in range(quantity):
                 deck.append(Card(id, color, number))
                 id += 1
-    
+
     if include_rainbow:
         assert len(deck) == 55
     else:
         assert len(deck) == 50
-    
+
     return deck
 
 
@@ -46,4 +46,3 @@ DECKS = {
     DECK55: standard_deck,
     DECK50: standard_deck_25
 }
-
