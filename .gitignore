@@ -1,4 +1,6 @@
 hanabiweb/db.sqlite3
+*.bak
+deck.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
