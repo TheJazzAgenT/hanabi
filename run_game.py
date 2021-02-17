@@ -1,79 +1,40 @@
 import sys
+import argparse
 
 from game.game import Game
 
 # TODO: aggiungere opzione -h (help)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ai", type=str, default="dummy", help="which bot to use [alphahanabi | deltahanabi | dummy | extremehanabi | superhanabi]")
+    parser.add_argument("--num_players", "-n", type=int, default=5, help="Number of players in the game")
+    parser.add_argument("--difficulty", "-p", type=str, default="hardest", help="[medium | hard | hardest]")
+    parser.add_argument("--no_pause", "-c", action="store_false", help="run the game without pausing")
+    parser.add_argument("--strategy_log", "-s", action="store_false", help="activate the strategy log")
+    parser.add_argument("--shorter_log", "-t", action="store_true", help="print a shorter log of turns and status")
+    parser.add_argument("--load_deck", "-l", type=str, default=None, help="load starting deck from a file")
+    parser.add_argument("--save_deck", "-d", type=str, default="deck.txt", help="file name to save starting deck to")
+    parser.add_argument("--repeat", "-r", type=int, default=None, help="run many games, until a score <= to the given score is reached")
+    parser.add_argument("--interactive", "-i", action='store_true', help="run in interactive mode")
+    parser.add_argument("--print_setup", "-q", action='store_true', help="quit immediately after showing the initial cards")
+    parser.add_argument("--deck_type", type=str, default="deck50", help="variant to use [deck50, deck55]")
+    args = parser.parse_args()
+
     # default values
-    ai = "alphahanabi"
+    ai = args.ai
     ai_params = {}
-    wait_key = True
-    num_players = 5
+    wait_key = args.no_pause
+    num_players = args.num_players
     log = True
-    strategy_log = False
-    dump_deck_to = "deck.txt"
-    load_deck_from = None
-    short_log = False
-    interactive = False
-    quit_immediately = False
-    DECK_TYPE = "deck50"
-
-    repeat = None  # repeat until a bad result is reached
-
-    # read options
-    if '-a' in sys.argv[1:]:
-        # select AI to be used
-        i = sys.argv.index('-a')
-        assert len(sys.argv) >= i+2
-        ai = sys.argv[i+1]
-
-    if '-c' in sys.argv[1:]:
-        wait_key = False
-
-    if '-s' in sys.argv[1:]:
-        strategy_log = True
-
-    if '-t' in sys.argv[1:]:
-        short_log = True
-
-    if '-l' in sys.argv[1:]:
-        # load deck from file
-        i = sys.argv.index('-l')
-        assert len(sys.argv) >= i+2
-        load_deck_from = sys.argv[i+1]
-
-    if '-d' in sys.argv[1:]:
-        # dump deck to file
-        i = sys.argv.index('-d')
-        assert len(sys.argv) >= i+2
-        dump_deck_to = sys.argv[i+1]
-
-    if '-n' in sys.argv[1:]:
-        # read number of players
-        i = sys.argv.index('-n')
-        assert len(sys.argv) >= i+2
-        num_players = int(sys.argv[i+1])
-
-    if '-r' in sys.argv[1:]:
-        # repeat until a bad score is reached
-        i = sys.argv.index('-r')
-        assert len(sys.argv) >= i+2
-        repeat = int(sys.argv[i+1])
-
-    if '-i' in sys.argv[1:]:
-        # run in interactive mode
-        interactive = True
-
-    if '-p' in sys.argv[1:]:
-        # set difficulty parameter
-        i = sys.argv.index('-p')
-        assert len(sys.argv) >= i+2
-        ai_params['difficulty'] = sys.argv[i+1]
-
-    if '-q' in sys.argv[1:]:
-        # quit immediately after showing the initial cards
-        quit_immediately = True
+    strategy_log = args.strategy_log
+    dump_deck_to = args.save_deck
+    load_deck_from = args.load_deck
+    short_log = args.shorter_log
+    interactive = args.interactive
+    quit_immediately = args.print_setup
+    DECK_TYPE = args.deck_type
+    repeat = args.repeat  # repeat until a bad result is reached
 
     counter = 0
     while True:
