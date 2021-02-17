@@ -6,6 +6,7 @@ from operator import mul
 import itertools
 
 from constants import *
+from functools import reduce
 
 
 class Knowledge:
@@ -28,7 +29,7 @@ class Knowledge:
         self.player_id = player_id
         
         # possibilities for each card
-        self.possibilities = [Counter(self.strategy.full_deck) for j in xrange(self.strategy.k)]
+        self.possibilities = [Counter(self.strategy.full_deck) for j in range(self.strategy.k)]
         
         # combinations (initially not constructed)
         self.combinations = None
@@ -94,7 +95,7 @@ class Knowledge:
         """
         possible_cards = self.get_possible_cards()
         
-        for card_pos in xrange(self.strategy.k):
+        for card_pos in range(self.strategy.k):
             self.update_single_card(card_pos, possible_cards)
             assert len(self.possibilities[card_pos]) > 0 or self.hand()[card_pos] is None
     
@@ -106,7 +107,7 @@ class Knowledge:
         """
         for (card_pos, cards) in meaning:
             self.possibilities[card_pos] = Counter(
-                {card: v for (card, v) in p.iteritems() if card in cards}
+                {card: v for (card, v) in list(p.items()) if card in cards}
             )
     
     
@@ -117,7 +118,7 @@ class Knowledge:
         """
         for (card_pos, p) in enumerate(self.possibilities):
             self.possibilities[card_pos] = Counter(
-                {card: v for (card, v) in p.iteritems() if card.matches_hint(action, card_pos)}
+                {card: v for (card, v) in list(p.items()) if card.matches_hint(action, card_pos)}
             )
     
     
@@ -147,13 +148,13 @@ class Knowledge:
         if num_combinations <= self.MAX_COMBINATIONS:
             # look for valid combinations
             # self.combinations = []
-            positions = [card_pos for card_pos in xrange(self.strategy.k) if hand[card_pos] is not None]
+            positions = [card_pos for card_pos in range(self.strategy.k) if hand[card_pos] is not None]
             possible_cards = self.get_possible_cards()
-            possible_cards_per_position = [set() for i in xrange(len(positions))]
+            possible_cards_per_position = [set() for i in range(len(positions))]
         
             for combination in itertools.product(*[p for p in self.possibilities if len(p) > 0]):
                 # check that this combination is valid
-                if all(possible_cards[card] >= v for (card, v) in Counter(combination).iteritems()):
+                if all(possible_cards[card] >= v for (card, v) in list(Counter(combination).items())):
                     for (i, card) in enumerate(combination):
                         possible_cards_per_position[i].add(card)
                     # self.combinations.append(combination)
@@ -198,14 +199,14 @@ class Knowledge:
                 PLAYABLE: 0,
                 RELEVANT: 0,
                 USEFUL: 0
-            } for i in xrange(self.strategy.k)]
+            } for i in range(self.strategy.k)]
         
         board = self.strategy.board
         full_deck = self.strategy.full_deck_composition
         discard_pile = self.strategy.discard_pile_composition
         
         for card_pos, p in enumerate(self.possibilities):
-            for card in p.iterkeys():
+            for card in list(p.keys()):
                 if not card.useful(board, full_deck, discard_pile):
                     res[card_pos][USELESS] += 1
                 elif card.playable(board):
@@ -226,7 +227,7 @@ class Knowledge:
             return None
         
         p = self.possibilities[card_pos]
-        return float(sum(v for (card, v) in p.iteritems() if card.playable(self.strategy.board))) / sum(p.values())
+        return float(sum(v for (card, v) in list(p.items()) if card.playable(self.strategy.board))) / sum(p.values())
     
     
     def playable(self, card_pos):
