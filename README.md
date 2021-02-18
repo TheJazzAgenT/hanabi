@@ -81,3 +81,6 @@ First run, saving the deck and seeing the cards:
 Second run, loading the deck and running the game without showing cards:
 
 `python run_game.py -l FILE_NAME -p DIFFICULTY -t -i`
+
+## To run tests
+`pytest`
