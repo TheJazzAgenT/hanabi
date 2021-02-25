@@ -150,7 +150,6 @@ if __name__ == "__main__":
             for current_ai_player, turn in ai_runner.run_game():
                 if wait_key:
                     input()
-
                 if short_log:
                     game.log_turn_short(turn, current_ai_player)
                     game.log_status_short()

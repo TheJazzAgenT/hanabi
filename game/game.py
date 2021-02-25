@@ -171,8 +171,6 @@ class Game:
                 assert any(card is not None and card.color == action.color for card in target.hand)
             else:
                 assert any(card is not None and card.number == action.number for card in target.hand)
-
-
         else:
             raise Exception("Unknown action type.")
 
