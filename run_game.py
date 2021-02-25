@@ -1,6 +1,7 @@
 import sys
 import argparse
 
+from game.ai_runner import AIRunner
 from game.game import Game
 
 # TODO: aggiungere opzione -h (help)
@@ -41,17 +42,19 @@ if __name__ == "__main__":
         # run game
         print("Starting game with %d players..." % num_players)
         print()
-        game = Game(
-                num_players=num_players,
-                ai=ai,
-                ai_params=ai_params,
-                strategy_log=strategy_log,
-                dump_deck_to=dump_deck_to,
-                load_deck_from=load_deck_from,
-                deck_type=DECK_TYPE
-            )
 
-        game.setup()
+        game = Game(
+            num_players=num_players,
+            load_deck_from=load_deck_from,
+            deck_type=DECK_TYPE
+        )
+
+        ai_runner = AIRunner(
+            game=game,
+            ai=ai,
+            ai_params=ai_params,
+            strategy_log=strategy_log
+        )
 
         if interactive:
             # run in interactive mode
@@ -106,21 +109,21 @@ if __name__ == "__main__":
             with term.fullscreen():
                 print_main(term, num_players, ai, ai_params, short_log)
 
-                for current_player, turn in game.run_game():
+                for current_ai_player, turn in game.run_game():
                     if wait_key:
                         cmd = input(":")
                         if cmd in ["c", "continue"]:
                             wait_key = False
 
-                    print_main(term, num_players, ai, ai_params, short_log, turn=turn, current_player=current_player)
+                    print_main(term, num_players, ai, ai_params, short_log, turn=turn, current_player=current_ai_player)
 
 
                 statistics = game.statistics
-                print_main(term, num_players, ai, ai_params, short_log, turn=turn, current_player=current_player, statistics=statistics)
+                print_main(term, num_players, ai, ai_params, short_log, turn=turn, current_player=current_ai_player, statistics=statistics)
 
                 while True:
                     cmd = input(":")
-                    print_main(term, num_players, ai, ai_params, short_log, turn=turn, current_player=current_player, statistics=statistics)
+                    print_main(term, num_players, ai, ai_params, short_log, turn=turn, current_player=current_ai_player, statistics=statistics)
 
                     if cmd in ["q", "quit"]:
                         break
@@ -144,18 +147,18 @@ if __name__ == "__main__":
                 break
 
             # now run the game
-            for current_player, turn in game.run_game():
+            for current_ai_player, turn in ai_runner.run_game():
                 if wait_key:
                     input()
 
                 if short_log:
-                    game.log_turn_short(turn, current_player)
+                    game.log_turn_short(turn, current_ai_player)
                     game.log_status_short()
                 else:
-                    game.log_turn(turn, current_player)
+                    ai_runner.log_turn(turn, current_ai_player)
                     game.log_status()
 
-            statistics = game.statistics
+            statistics = ai_runner.statistics
             print(statistics)
 
 

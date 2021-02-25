@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
+import copy
 import random
 from collections import namedtuple
-import copy
 
-from game.card import Card
-from game.player import Player
 from game.action import Action
-from game.deck import DECKS, DECK55, DECK50
-
+from game.card import Card
+from game.deck import DECKS, DECK55
+from game.player import Player
 
 Turn = namedtuple("Turn", "player action number")
 Statistics = namedtuple("Statistics", "score lives hints num_turns")
@@ -24,12 +22,9 @@ class Game:
     INITIAL_LIVES = 3
 
 
-    def __init__(self, num_players, ai="alphahanabi", ai_params={}, strategy_log=False, dump_deck_to=None, load_deck_from=None, deck_description=None, deck_type=DECK55):
+    def __init__(self, num_players, load_deck_from=None, deck_description=None, deck_type=DECK55, dump_deck_to=None):
         self.num_players = num_players
-        self.ai = ai
-        self.ai_params = ai_params
 
-        self.strategy_log = strategy_log    # log messages from strategy to standard output
         self.dump_deck_to = dump_deck_to    # if not None, dump the initial deck to the given file
         self.load_deck_from = load_deck_from    # if not None, load the initial deck from the given file
         self.deck_description = deck_description    # if not None, use this initial deck
@@ -39,7 +34,6 @@ class Game:
         self.k = self.CARDS_PER_PLAYER[num_players]
 
 
-    def setup(self):
         if self.load_deck_from is None and self.deck_description is None:
             # construct deck
             self.deck = DECKS[self.deck_type]()
@@ -63,14 +57,8 @@ class Game:
             self.dump_deck(self.dump_deck_to)
 
         # initialize players, with initial hand of cards
-        self.players = [Player(
-                id = i,
-                game = self,
-                hand = [self.draw_card_from_deck() for i in range(self.k)],
-                ai = self.ai,
-                ai_params = self.ai_params,
-                strategy_log = self.strategy_log
-            ) for i in range(self.num_players)]
+        self.players = [Player(i, self, [self.draw_card_from_deck() for i in range(self.k)])
+            for i in range(self.num_players)]
 
         # set number of hints and lives
         self.hints = self.INITIAL_HINTS
@@ -90,10 +78,6 @@ class Game:
         self.last_round = False
         self.last_player = None
         self.last_turn = None
-
-        # call players' initializations
-        for player in self.players:
-            player.initialize()
 
 
     def get_current_turn(self):
@@ -144,8 +128,7 @@ class Game:
         return self.lives == 0
 
 
-    def run_turn(self, player):
-        action = player.get_turn_action()
+    def run_turn(self, player, action):
         end_game = self.last_round and self.last_player == player
 
         if action.type == Action.PLAY:
@@ -193,24 +176,9 @@ class Game:
         else:
             raise Exception("Unknown action type.")
 
-        return Turn(player, action, self.get_current_turn()), end_game
-
-
-    def log_turn(self, turn, player):
-        action = turn.action
-        print("Turn %d (player %d):" % (turn.number, player.id), end=' ')
-        if action.type in [Action.PLAY, Action.DISCARD]:
-            print(action.type, self.discard_pile[-1], "(card %d)," % action.card_pos, end=' ')
-            print("draw %r" % player.hand[action.card_pos])
-
-        elif action.type == Action.HINT:
-            print(action.type, end=' ')
-            print("to player %d," % action.player_id, end=' ')
-            print("cards", action.cards_pos, end=' ')
-            print("are", end=' ')
-            print(action.value)
-
-        print()
+        turn = Turn(player, action, self.get_current_turn())
+        self.turns.append(turn)
+        return turn, end_game
 
     def log_turn_short(self, turn, player):
         print("Turn %d (player %d): %s" % (self.get_current_turn(), player.id, turn.action.type))
@@ -222,6 +190,7 @@ class Game:
         print("Hands:")
         for player in self.players:
             print("    Player %d" % player.id, player.hand)
+
         print("Board:", end=' ')
         for color in Card.COLORS:
             print(colored("%d" % self.board[color], Card.PRINTABLE_COLORS[color]), end=' ')
@@ -282,39 +251,3 @@ class Game:
         for card in deck_description.split(","):
             number, color, id = card.split()
             self.deck.append(Card(id=int(id), color=color, number=int(number)))
-
-
-    def run_game(self):
-        """
-        Run the game, yielding (current_player, turn) after each turn.
-        At the end, save statistics about the game.
-        """
-        self.end_game = False
-        current_player = self.players[0]
-
-        while not self.end_game:
-            # do turn
-            turn, self.end_game = self.run_turn(current_player)
-
-            # temporarily store this turn, for get_current_status()
-            self.this_turn = turn
-
-            # yield current player and turn
-            yield current_player, turn
-
-            # inform all players
-            for player in self.players:
-                player.feed_turn(turn)
-
-            # store turn
-            self.turns.append(turn)
-
-            # change current player
-            current_player = current_player.next_player()
-
-        self.statistics = Statistics(
-            score = self.get_current_score(),
-            lives = self.lives,
-            hints = self.hints,
-            num_turns = len(self.turns)
-        )
